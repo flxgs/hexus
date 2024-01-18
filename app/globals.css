@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 142.1 76.2% 36.3%;
-    --radius: 1rem;
+    --radius: 0.75rem;
   }
 
   .dark {
@@ -54,13 +54,17 @@
     transition: width 0.3s ease-in-out;
     background-color: purple;
   }
+
+  .lucide {
+    width: 16px;
+  }
 }
 
-/* @layer base {
+@layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
-} */
+}

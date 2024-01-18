@@ -46,10 +46,11 @@ export const Slide: React.FC<SlideProps> = ({
     // Move to the next slide after the sound of the current slide finishes
     nextSlide();
     setProgress(0); // Reset progress for the next slide
+    playSlideAudio();
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 max-w-screen-lg ">
       <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
         {image ? (
           <>

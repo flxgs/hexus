@@ -2,6 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
 import { Slide } from "./Slide";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { FileText } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { motion } from "framer-motion";
 
 export interface ImageInfo {
   src: string;
@@ -9,6 +14,7 @@ export interface ImageInfo {
 }
 
 export interface SlideProps {
+  id: string;
   image: ImageInfo;
   isPlaying: boolean;
   playSlideAudio: () => void;
@@ -50,9 +56,59 @@ const Slideshow = () => {
 
   const currentImage = images[currentSlide];
 
+  const pdfRef = useRef<jsPDF | null>(null);
+
+  const getFormattedDate = () => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0"); // January is 0!
+    const yyyy = today.getFullYear();
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const downloadPdf = () => {
+    const formattedDate = getFormattedDate();
+    const pdfFileName = `slideshow_${formattedDate}.pdf`;
+
+    const pdf = new jsPDF();
+
+    const addImageToPdf = (imageUrl: string) => {
+      const img = new Image();
+      img.src = imageUrl;
+
+      img.onload = () => {
+        const imgWidth = 210;
+        const imgHeight = (img.height * imgWidth) / img.width;
+        pdf.addImage(img, "PNG", 0, 0, imgWidth, imgHeight);
+
+        pdf.addPage();
+
+        if (images.length === pdfRef.current?.getNumberOfPages()) {
+          pdf.save(pdfFileName);
+        }
+      };
+    };
+
+    images.forEach((image) => {
+      addImageToPdf(image.src);
+    });
+  };
+
   return (
-    <div className="flex flex-col items-center gap-4 p-16 h-screen">
+    <div className="flex flex-col items-center gap-4 p-4 h-screen justify-center">
+      <div className="flex flex-row justify-between items-center w-full">
+        <Avatar>
+          <AvatarImage src="https://avatars.githubusercontent.com/u/36757830?v=4" />
+          <AvatarFallback>FE</AvatarFallback>
+        </Avatar>
+        <Button onClick={downloadPdf}>
+          <FileText className="mr-2 lucide" />
+          Download PDF
+        </Button>
+      </div>
+
       <Slide
+        id={`slide-${currentSlide}`}
         image={currentImage}
         isPlaying={isPlaying}
         playSlideAudio={playCurrentSlideAudio}

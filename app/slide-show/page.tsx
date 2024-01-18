@@ -11,8 +11,7 @@ import Slideshow from "@/components/SlideShow";
 export default async function SlideShowPage() {
   return (
     <>
-      <section className="flex flex-col items-center">
-        {" "}
+      <section className="flex flex-col items-center bg-gray-900">
         <Slideshow />
       </section>
     </>
