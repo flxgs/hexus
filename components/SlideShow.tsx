@@ -2,79 +2,90 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
 
-interface VideoInfo {
+interface ImageInfo {
   src: string;
-  soundSrc: string;
+  soundSrc: string; // Add sound source for each image
 }
 
-const videos: VideoInfo[] = [
-  { src: "video-1.mp4", soundSrc: "sound1.mp3" },
-  { src: "video-2.mp4", soundSrc: "sound2.mp3" },
+const images: ImageInfo[] = [
+  { src: "/image1.png", soundSrc: "/notion.mp3" },
+  { src: "/image3.png", soundSrc: "/cron.mp3" },
+  { src: "/image2.png", soundSrc: "/linear.mp3" },
+
+  // Add more image objects as needed
 ];
 
 const Slideshow = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  useEffect(() => {
-    if (isPlaying && videoRef.current && audioRef.current) {
-      videoRef.current.play();
-      audioRef.current.play();
-    }
-  }, [currentSlide]);
-
-  const playVideo = () => {
-    if (videoRef.current && audioRef.current) {
-      videoRef.current.play();
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const stopVideo = () => {
-    if (videoRef.current && audioRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
-    }
-  };
-
   const nextSlide = () => {
-    stopVideo();
-    setCurrentSlide((prevSlide) => (prevSlide + 1) % videos.length);
+    setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
   };
 
-  const handleVideoEnded = () => {
-    // Automatically switch to the next slide when the video ends
+  const playSlideshow = () => {
+    setIsPlaying(true);
+  };
+
+  const stopSlideshow = () => {
+    setIsPlaying(false);
+  };
+
+  useEffect(() => {
+    if (isPlaying) {
+      const timer = setInterval(() => {
+        nextSlide();
+      }, 15000); // Automatically switch to the next slide after 15 seconds
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      // Play the audio of the current slide when isPlaying is true
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+    }
+  }, [currentSlide, isPlaying]);
+
+  const handleAudioEnded = () => {
+    // Move to the next slide after the sound of the current slide finishes
     nextSlide();
   };
 
+  const currentImage = images[currentSlide];
+
   return (
-    <div>
-      <video
-        ref={videoRef}
-        src={videos[currentSlide].src}
-        muted={!isPlaying}
-        onEnded={handleVideoEnded}
-      />
-      <audio
-        ref={audioRef}
-        src={videos[currentSlide].soundSrc}
-        muted={!isPlaying}
-      />
-      <div className="">
-        <Tooltip content={isPlaying ? "Stop" : "Play"} side="top">
-          <Button onClick={isPlaying ? stopVideo : playVideo}>
-            {isPlaying ? "Stop" : "Play"}
-          </Button>
-        </Tooltip>
-        <Tooltip content="Next Slide" side="top">
-          <Button onClick={nextSlide}>Next Slide</Button>
-        </Tooltip>
+    <div className="flex flex-col items-center gap-4 p-16 h-screen">
+      <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
+        {currentImage ? (
+          <>
+            <img
+              src={currentImage.src}
+              alt={`Slide ${currentSlide}`}
+              className="w-full h-full object-cover"
+            />
+            <audio
+              ref={audioRef}
+              src={currentImage.soundSrc}
+              onEnded={handleAudioEnded}
+            />
+          </>
+        ) : (
+          <div>No image available</div>
+        )}
+      </div>
+      <div className="flex flex-row gap-4">
+        <Button onClick={isPlaying ? stopSlideshow : playSlideshow}>
+          {isPlaying ? "Stop" : "Play"}
+        </Button>
+
+        <Button onClick={nextSlide}>Next Slide</Button>
       </div>
     </div>
   );

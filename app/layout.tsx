@@ -13,19 +13,7 @@ export default async function MarketingLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="container z-40 bg-background">
-        <div className="flex h-20 items-center justify-between py-6">
-          <nav>
-            <Link
-              href="/slide-show"
-              className={cn(
-                buttonVariants({ variant: "secondary", size: "sm" }),
-                "px-4"
-              )}
-            >
-              Login
-            </Link>
-          </nav>
-        </div>
+        <div className="flex h-20 items-center justify-between py-6"></div>
       </header>
       <main className="flex-1">{children}</main>
     </div>
