@@ -19,9 +19,16 @@ export const Slide: React.FC<SlideProps> = ({
   isPlaying,
   playSlideAudio,
   nextSlide,
+  onAudioEnd,
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [progress, setProgress] = useState<number>(0);
+
+  useEffect(() => {
+    playSlideAudio();
+  }, [playSlideAudio]);
+
+  ///////////////////////
 
   useEffect(() => {
     if (isPlaying && audioRef.current) {
@@ -40,6 +47,8 @@ export const Slide: React.FC<SlideProps> = ({
     };
   }, [audioRef]);
 
+  ///////////////////////
+
   const updateProgress = () => {
     if (audioRef.current) {
       const currentTime = audioRef.current.currentTime;
@@ -49,11 +58,12 @@ export const Slide: React.FC<SlideProps> = ({
     }
   };
 
+  ///////////////////////
+
   const handleAudioEnded = () => {
-    // Move to the next slide after the sound of the current slide finishes
     nextSlide();
     setProgress(0); // Reset progress for the next slide
-    playSlideAudio();
+    onAudioEnd(); // Notify that audio has ended
   };
 
   return (
@@ -74,7 +84,7 @@ export const Slide: React.FC<SlideProps> = ({
                 className="w-full h-full object-cover"
               />
               <audio
-                ref={(el) => (audioRef.current = el)}
+                ref={audioRef}
                 src={image.soundSrc}
                 onEnded={handleAudioEnded}
               />
@@ -85,7 +95,7 @@ export const Slide: React.FC<SlideProps> = ({
         )}
       </div>
       <div
-        className="bg-purple-500 h-2 rounded-3xl progress-bar"
+        className="bg-purple-500 h-2 rounded-3xl progress-bar "
         style={{ width: `${progress}%` }}
       ></div>
     </motion.div>

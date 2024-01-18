@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { Tooltip } from "./ui/tooltip";
 import { Slide } from "./Slide";
 import { jsPDF } from "jspdf";
-import { FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -23,6 +23,7 @@ export interface SlideProps {
   isPlaying: boolean;
   playSlideAudio: () => void;
   nextSlide: () => void;
+  onAudioEnd: () => void;
 }
 
 const images: ImageInfo[] = [
@@ -30,6 +31,8 @@ const images: ImageInfo[] = [
   { src: "/image3.png", soundSrc: "/cron.mp3" },
   { src: "/image2.png", soundSrc: "/linear.mp3" },
 ];
+
+//////////////////////////////////////////////
 
 const Slideshow = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
@@ -44,19 +47,48 @@ const Slideshow = () => {
     setCurrentSlide((prevSlide) => (prevSlide - 1) % images.length);
   };
 
-  const playSlideshow = () => {
+  ////////////////////
+
+  const playAudio = () => {
     setIsPlaying(true);
   };
 
-  const stopSlideshow = () => {
+  const pauseAudio = () => {
     setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
   };
+
+  const stopAudio = () => {
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0; // Reset audio to start
+    }
+  };
+
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.play();
+    }
+  }, [isPlaying]);
+
+  //////////////////////
 
   const playCurrentSlideAudio = () => {
     if (audioRef.current) {
       audioRef.current.play();
     }
   };
+
+  /////////////////////
+
+  const handleAudioEnd = () => {
+    setIsPlaying(false);
+  };
+
+  /////////////////////
 
   const currentImage = images[currentSlide];
 
@@ -113,7 +145,7 @@ const Slideshow = () => {
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4 h-screen justify-center">
+    <div className="flex flex-col items-center gap-8 p-4 h-screen justify-center">
       <motion.div
         initial="hidden"
         animate="enter"
@@ -137,6 +169,7 @@ const Slideshow = () => {
         isPlaying={isPlaying}
         playSlideAudio={playCurrentSlideAudio}
         nextSlide={nextSlide}
+        onAudioEnd={handleAudioEnd}
       />
 
       <motion.div
@@ -146,13 +179,27 @@ const Slideshow = () => {
         transition={{ type: "easeInOut", duration: 1.3 }}
         className="flex flex-row gap-4"
       >
-        <Button onClick={prevSlide}>Previous Slide</Button>
-
-        <Button onClick={isPlaying ? stopSlideshow : playSlideshow}>
-          {isPlaying ? "Stop" : "Play"}
+        <Button onClick={prevSlide}>
+          <ArrowLeft className="mr-2" />
+          Previous Slide
         </Button>
 
-        <Button onClick={nextSlide}>Next Slide</Button>
+        {/* Play Button */}
+        <Button onClick={playAudio} disabled={isPlaying}>
+          Play
+        </Button>
+
+        {/* Pause Button */}
+        <Button onClick={pauseAudio} disabled={!isPlaying}>
+          Pause
+        </Button>
+
+        {/* Stop Button */}
+        <Button onClick={stopAudio}>Stop</Button>
+
+        <Button onClick={nextSlide}>
+          Next Slide <ArrowRight className="ml-2" />
+        </Button>
       </motion.div>
       <div className="text-gray-600 text-sm">
         Slide {currentSlide + 1}/{images.length}
