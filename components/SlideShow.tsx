@@ -4,21 +4,67 @@ import { Tooltip } from "./ui/tooltip";
 
 interface ImageInfo {
   src: string;
-  soundSrc: string; // Add sound source for each image
+  soundSrc: string;
+}
+
+interface SlideProps {
+  image: ImageInfo;
+  isPlaying: boolean;
+  playSlideAudio: () => void;
+  nextSlide: () => void;
 }
 
 const images: ImageInfo[] = [
   { src: "/image1.png", soundSrc: "/notion.mp3" },
   { src: "/image3.png", soundSrc: "/cron.mp3" },
   { src: "/image2.png", soundSrc: "/linear.mp3" },
-
-  // Add more image objects as needed
 ];
+
+const Slide: React.FC<SlideProps> = ({
+  image,
+  isPlaying,
+  playSlideAudio,
+  nextSlide,
+}) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.play();
+    }
+  }, [isPlaying, audioRef]);
+
+  const handleAudioEnded = () => {
+    // Move to the next slide after the sound of the current slide finishes
+    nextSlide();
+  };
+
+  return (
+    <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
+      {image ? (
+        <>
+          <img
+            src={image.src}
+            alt={`Slide ${images.indexOf(image) + 1}`}
+            className="w-full h-full object-cover"
+          />
+          <audio
+            ref={(el) => (audioRef.current = el)}
+            src={image.soundSrc}
+            onEnded={handleAudioEnded}
+          />
+        </>
+      ) : (
+        <div>No image available</div>
+      )}
+    </div>
+  );
+};
 
 const Slideshow = () => {
   const [currentSlide, setCurrentSlide] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const nextSlide = () => {
     setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
@@ -32,54 +78,24 @@ const Slideshow = () => {
     setIsPlaying(false);
   };
 
-  useEffect(() => {
-    if (isPlaying) {
-      const timer = setInterval(() => {
-        nextSlide();
-      }, 15000); // Automatically switch to the next slide after 15 seconds
-
-      return () => {
-        clearInterval(timer);
-      };
+  const playCurrentSlideAudio = (
+    audioRef: React.RefObject<HTMLAudioElement>
+  ) => {
+    if (audioRef.current) {
+      audioRef.current.play();
     }
-  }, [isPlaying]);
-
-  useEffect(() => {
-    if (isPlaying) {
-      // Play the audio of the current slide when isPlaying is true
-      if (audioRef.current) {
-        audioRef.current.play();
-      }
-    }
-  }, [currentSlide, isPlaying]);
-
-  const handleAudioEnded = () => {
-    // Move to the next slide after the sound of the current slide finishes
-    nextSlide();
   };
 
   const currentImage = images[currentSlide];
 
   return (
     <div className="flex flex-col items-center gap-4 p-16 h-screen">
-      <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
-        {currentImage ? (
-          <>
-            <img
-              src={currentImage.src}
-              alt={`Slide ${currentSlide}`}
-              className="w-full h-full object-cover"
-            />
-            <audio
-              ref={audioRef}
-              src={currentImage.soundSrc}
-              onEnded={handleAudioEnded}
-            />
-          </>
-        ) : (
-          <div>No image available</div>
-        )}
-      </div>
+      <Slide
+        image={currentImage}
+        isPlaying={isPlaying}
+        playSlideAudio={() => playCurrentSlideAudio(audioRef)}
+        nextSlide={nextSlide}
+      />
       <div className="flex flex-row gap-4">
         <Button onClick={isPlaying ? stopSlideshow : playSlideshow}>
           {isPlaying ? "Stop" : "Play"}
