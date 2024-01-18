@@ -27,6 +27,7 @@ const Slide: React.FC<SlideProps> = ({
   nextSlide,
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
     if (isPlaying && audioRef.current) {
@@ -34,25 +35,53 @@ const Slide: React.FC<SlideProps> = ({
     }
   }, [isPlaying, audioRef]);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.addEventListener("timeupdate", updateProgress);
+    }
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener("timeupdate", updateProgress);
+      }
+    };
+  }, [audioRef]);
+
+  const updateProgress = () => {
+    if (audioRef.current) {
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      const calculatedProgress = (currentTime / duration) * 100;
+      setProgress(calculatedProgress);
+    }
+  };
+
   const handleAudioEnded = () => {
     // Move to the next slide after the sound of the current slide finishes
     nextSlide();
+    setProgress(0); // Reset progress for the next slide
   };
 
   return (
     <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
       {image ? (
         <>
-          <img
-            src={image.src}
-            alt={`Slide ${images.indexOf(image) + 1}`}
-            className="w-full h-full object-cover"
-          />
-          <audio
-            ref={(el) => (audioRef.current = el)}
-            src={image.soundSrc}
-            onEnded={handleAudioEnded}
-          />
+          <div>
+            <img
+              src={image.src}
+              alt={`Slide ${images.indexOf(image) + 1}`}
+              className="w-full h-full object-cover"
+            />
+            <audio
+              ref={(el) => (audioRef.current = el)}
+              src={image.soundSrc}
+              onEnded={handleAudioEnded}
+            />
+          </div>
+
+          <div
+            className="bg-blue-500 h-4"
+            style={{ width: `${progress}%` }}
+          ></div>
         </>
       ) : (
         <div>No image available</div>
@@ -70,6 +99,10 @@ const Slideshow = () => {
     setCurrentSlide((prevSlide) => (prevSlide + 1) % images.length);
   };
 
+  const prevSlide = () => {
+    setCurrentSlide((prevSlide) => (prevSlide - 1) % images.length);
+  };
+
   const playSlideshow = () => {
     setIsPlaying(true);
   };
@@ -78,9 +111,7 @@ const Slideshow = () => {
     setIsPlaying(false);
   };
 
-  const playCurrentSlideAudio = (
-    audioRef: React.RefObject<HTMLAudioElement>
-  ) => {
+  const playCurrentSlideAudio = () => {
     if (audioRef.current) {
       audioRef.current.play();
     }
@@ -93,15 +124,21 @@ const Slideshow = () => {
       <Slide
         image={currentImage}
         isPlaying={isPlaying}
-        playSlideAudio={() => playCurrentSlideAudio(audioRef)}
+        playSlideAudio={playCurrentSlideAudio}
         nextSlide={nextSlide}
       />
+
       <div className="flex flex-row gap-4">
+        <Button onClick={prevSlide}>Previous Slide</Button>
+
         <Button onClick={isPlaying ? stopSlideshow : playSlideshow}>
           {isPlaying ? "Stop" : "Play"}
         </Button>
 
         <Button onClick={nextSlide}>Next Slide</Button>
+      </div>
+      <div className="text-gray-600 text-sm">
+        Slide {currentSlide + 1}/{images.length}
       </div>
     </div>
   );
