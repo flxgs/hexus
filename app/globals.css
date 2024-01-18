@@ -47,13 +47,20 @@
     --input: 240 3.7% 15.9%;
     --ring: 142.4 71.8% 29.2%;
   }
+
+  .progress-bar {
+    height: 2px;
+    border-radius: 3px;
+    transition: width 0.3s ease-in-out;
+    background-color: purple;
+  }
 }
 
-@layer base {
+/* @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
-}
+} */
