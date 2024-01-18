@@ -1,4 +1,5 @@
 import { ImageInfo, SlideProps } from "@/components/SlideShow";
+import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const images: ImageInfo[] = [
@@ -6,6 +7,12 @@ const images: ImageInfo[] = [
   { src: "/image3.png", soundSrc: "/cron.mp3" },
   { src: "/image2.png", soundSrc: "/linear.mp3" },
 ];
+
+const pageTransitionVariants = {
+  hidden: { opacity: 0, x: 0 },
+  enter: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: 0 },
+};
 
 export const Slide: React.FC<SlideProps> = ({
   image,
@@ -50,8 +57,14 @@ export const Slide: React.FC<SlideProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-screen-lg ">
-      <div className="bg-red-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
+    <motion.div
+      initial="hidden"
+      animate="enter"
+      variants={pageTransitionVariants}
+      transition={{ type: "easeInOut", duration: 3.75, delay: 1 }}
+      className="flex flex-col gap-4 max-w-screen-lg "
+    >
+      <div className="bg-black-500 rounded-3xl border-4 border-gray-900 overflow-hidden">
         {image ? (
           <>
             <div>
@@ -75,6 +88,6 @@ export const Slide: React.FC<SlideProps> = ({
         className="bg-purple-500 h-2 rounded-3xl progress-bar"
         style={{ width: `${progress}%` }}
       ></div>
-    </div>
+    </motion.div>
   );
 };
